@@ -1,0 +1,88 @@
+---
+title: "Introduction"
+description: "The source code for Gökhan Bulut's personal portfolio website — built with Next.js 15 and Tailwind CSS."
+---
+
+# skyhan.cloud
+
+skyhan.cloud is the personal portfolio and blog of **Gökhan Bulut**, a developer from Turkey. The site is open-source and built on modern web technologies, designed with a minimal, warm aesthetic.
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Clone the repo and get the site running locally in minutes.
+  </Card>
+  <Card title="Self-Hosting" icon="server" href="/self-hosting/prerequisites">
+    Deploy your own instance of the site with full control.
+  </Card>
+  <Card title="Features" icon="sparkles" href="/features/discord-status">
+    Explore live Discord status, MDX blog, projects, and more.
+  </Card>
+  <Card title="Contributing" icon="code-pull-request" href="/contributing/guidelines">
+    Learn how to contribute to the project.
+  </Card>
+</CardGroup>
+
+## Tech stack
+
+| Technology | Purpose |
+|---|---|
+| [Next.js 15](https://nextjs.org) | React framework with App Router |
+| [Tailwind CSS](https://tailwindcss.com) | Utility-first styling |
+| [MDX](https://mdxjs.com) | Blog posts with embedded components |
+| [Radix UI](https://radix-ui.com) | Accessible UI primitives (Tooltip) |
+| [Zustand](https://zustand-demo.pmnd.rs) | Lightweight client state management |
+| [Zod](https://zod.dev) | Environment variable validation |
+| [lantern.rest](https://lantern.rest) | Live Discord presence API |
+| [Rybbit](https://www.rybbit.io) | Privacy-friendly analytics |
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Live Discord status" icon="discord" href="/features/discord-status">
+    Real-time online/offline indicator powered by the lantern.rest API, with Spotify now-playing support.
+  </Card>
+  <Card title="MDX blog" icon="pen-to-square" href="/features/blog">
+    Write rich blog posts with custom React components, syntax-highlighted code blocks, and images.
+  </Card>
+  <Card title="Projects showcase" icon="folder-open" href="/features/projects">
+    Curated list of open-source and personal projects with links and descriptions.
+  </Card>
+  <Card title="Work history" icon="briefcase" href="/features/works">
+    Professional work history with client descriptions and project links.
+  </Card>
+  <Card title="View transitions" icon="wand-magic-sparkles" href="/quickstart">
+    Smooth page transitions using the View Transitions API via next-view-transitions.
+  </Card>
+  <Card title="Dark & light mode" icon="moon" href="/configuration/environment-variables">
+    Automatic theme switching based on system preference, with a warm earthy palette.
+  </Card>
+</CardGroup>
+
+## Project structure
+
+```
+skyhan.cloud/
+├── app/
+│   ├── blogs/              # Blog posts as MDX pages
+│   │   └── [slug]/
+│   │       └── page.mdx
+│   ├── layout.tsx          # Root layout with fonts and analytics
+│   └── page.tsx            # Homepage
+├── components/             # Reusable React components
+│   ├── blogs/              # Blog-specific components
+│   ├── avatar.tsx
+│   ├── discord-status.tsx
+│   ├── inline-quote.tsx
+│   ├── projects.tsx
+│   ├── tooltip.tsx
+│   └── works.tsx
+├── styles/                 # Global CSS with design tokens
+├── utils/                  # Utility functions
+├── stores/                 # Zustand state stores
+├── types/                  # TypeScript type definitions
+└── public/                 # Static assets
+```
+
+## License
+
+skyhan.cloud is licensed under the [GNU General Public License v3.0](https://github.com/skyhancloud/skyhan.cloud/blob/main/LICENSE). You are free to use, modify, and distribute the source code under the terms of the GPL-3.0 license.

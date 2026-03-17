@@ -1,0 +1,72 @@
+---
+title: Projects
+description: The Projects section of the portfolio — a static list of Gökhan's personal and open-source projects with hover effects and analytics tracking.
+---
+
+The `Projects` component renders a vertically stacked list of personal and open-source projects on the home page. Each item is a full-width clickable link that navigates to the project's URL.
+
+## Data structure
+
+Projects are defined as a plain array of objects inside `components/projects.tsx`. Each object has three fields:
+
+```typescript
+{
+  name: string;        // Display name shown as the heading
+  link: string;        // External URL the card links to
+  description: string; // Short description shown below the name
+}
+```
+
+## Current projects
+
+| Name | Link | Description |
+|------|------|-------------|
+| **SubWatch** | `https://subwatch.net` | Track your subscriptions and manage your expenses. |
+| **discord.place** | `https://discord.place` | A hub for everything Discord. |
+| **lantern.rest** | `https://github.com/discordplace/lantern` | Broadcast your active Discord status to an API endpoint and WebSocket connection. |
+| **discordsfx.com** | `https://discord.place/sounds` | Find short mp3 files for Discord Soundboard. First Next.js project, now part of discord.place. |
+| **Distalk Bot** | `https://discord.com/oauth2/authorize?client_id=1243615735272570912` | A Discord bot for anonymous conversations using TypeScript and MongoDB. |
+
+## Hover effect
+
+Each project card uses a CSS-only reveal effect. An absolutely-positioned `div` with `bg-secondary` and `opacity-0` sits behind the card content at `-z-10`. On `group-hover` the opacity transitions to `100` over 75 ms, creating a subtle background highlight without JavaScript.
+
+```tsx
+<div className='absolute left-0 top-0 -z-10 h-[130%] w-[105%] translate-x-[-2.5%] translate-y-[-12%] rounded-xl bg-secondary opacity-0 transition-opacity duration-75 group-hover:opacity-100' />
+```
+
+The element is intentionally oversized (`h-[130%]`, `w-[105%]`) and offset slightly so the highlight bleeds past the card's exact bounding box.
+
+## Analytics
+
+Each link click fires a Rybbit analytics event:
+
+```typescript
+window.rybbit.event('project_link_click', {
+  project_name: item.name,
+  project_link: item.link
+});
+```
+
+The call is guarded with `'rybbit' in window` so it does nothing in environments where the analytics script is absent.
+
+## Modifying projects
+
+To add, remove, or reorder projects, edit the `data` array at the top of `components/projects.tsx`:
+
+```tsx
+const data = [
+  {
+    name: 'My New Project',
+    link: 'https://example.com',
+    description: 'A short description of what this project does.'
+  },
+  // ...existing projects
+];
+```
+
+The list renders in the order the array is declared — there is no automatic sorting.
+
+<Note>
+  There is no CMS or external data source. All project data lives directly in the component file.
+</Note>

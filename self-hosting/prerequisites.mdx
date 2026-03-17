@@ -1,0 +1,55 @@
+---
+title: Prerequisites
+description: Everything you need to install and configure before setting up skyhan.cloud locally.
+---
+
+Before you can run skyhan.cloud on your machine, you need a few tools installed. This page lists all required and optional dependencies.
+
+## What you'll set up
+
+By the end of the self-hosting guides you will have:
+
+- A local clone of the repository running on `http://localhost:3000`
+- All environment variables configured
+- (Optional) Rybbit analytics wired up to your own account
+
+## Required tools
+
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="node-js" href="https://nodejs.org/en/download/">
+    The JavaScript runtime that powers the Next.js server. Install the **LTS** release from the official download page.
+  </Card>
+  <Card title="pnpm" icon="box" href="https://pnpm.io/installation">
+    The package manager used by this project. Install it globally after Node.js is set up: `npm install -g pnpm`
+  </Card>
+  <Card title="Git" icon="code-branch" href="https://git-scm.com/downloads">
+    Required to clone the repository and manage source control. Download the installer for your operating system.
+  </Card>
+  <Card title="VS Code" icon="code" href="https://code.visualstudio.com/">
+    The recommended code editor. Any editor works, but VS Code has the best TypeScript and Tailwind CSS tooling out of the box.
+  </Card>
+</CardGroup>
+
+## Optional tools
+
+<CardGroup cols={1}>
+  <Card title="Rybbit" icon="chart-bar" href="https://www.rybbit.io">
+    A privacy-friendly analytics platform. If you want to track page views, create a free account at rybbit.io, create a new site, and copy your **Site ID** and **script URL** into your `.env` file. Analytics will not load if these values are absent — the site works fine without them.
+  </Card>
+</CardGroup>
+
+## Verify your installation
+
+Run these commands to confirm the required tools are available before proceeding:
+
+```bash
+node --version
+pnpm --version
+git --version
+```
+
+<Note>
+  This project was built and tested with **pnpm v9** and **Node.js 18+**. Using older versions may produce unexpected errors during `pnpm install` or `pnpm build`.
+</Note>
+
+Once all checks pass, continue to [Local Development](/self-hosting/local-development) to clone and run the project.

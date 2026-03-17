@@ -1,0 +1,147 @@
+---
+title: Blog
+description: MDX-based blog system where each post is a page.mdx file with exported metadata, syntax-highlighted code blocks, and optimised images.
+---
+
+Blog posts on skyhan.cloud are authored as MDX files and co-located with the Next.js App Router. Every post lives at:
+
+```
+app/blogs/[slug]/page.mdx
+```
+
+The `Blogs` component in `components/blogs/index.tsx` reads the `app/blogs/` directory at build time with `fs.readdirSync`, dynamically imports each `page.mdx`, extracts its exported `metadata`, and renders a sorted list of post links on the home page.
+
+## Metadata pattern
+
+Each post exports a `metadata` constant produced by the `generateMetadata` utility:
+
+```tsx
+import generateMetadata from '@/utils/generateMetadata';
+
+export const metadata = generateMetadata({
+  title: 'Unlocking the Potential of iOS Notifications with Bark.js',
+  description: 'A straightforward JavaScript library designed to send custom notifications directly to your iPhone using the Bark iOS App.',
+  date: '2025-01-29'
+});
+```
+
+`generateMetadata` accepts a `CustomMetadata` object:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | `string` | Post title. Appended with ` - skyhan.cloud` in the `<title>` tag. |
+| `description` | `string` | Post description used in `<meta>` and Open Graph tags. |
+| `keywords` | `string[]` | Optional keyword list. Defaults to `['personal', 'blog', 'portfolio', 'projects']`. |
+| `date` | `string` | ISO 8601 date string (e.g. `'2025-01-29'`). Used to sort posts newest-first on the home page. |
+
+Posts missing a `title` are silently excluded from the home-page listing.
+
+## Blog components
+
+Two custom components are available inside every `page.mdx`:
+
+### `Image`
+
+Located at `components/blogs/image.tsx`. Wraps `next/image` with a centred layout and renders the `alt` text as a visible caption below the image.
+
+```tsx
+import Image from '@/components/blogs/image';
+
+<Image
+  src='https://i.imgur.com/xcs8YFq.png'
+  alt='Bark iOS App Logo'
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `src` | `string` | — | Image URL |
+| `alt` | `string` | — | Alt text, also rendered as a caption |
+| `width` | `number` | `600` | Rendered width in pixels |
+| `height` | `number` | `400` | Rendered height in pixels |
+
+### `CodeBlock`
+
+Located at `components/blogs/code-block.tsx`. Renders syntax-highlighted code using `react-syntax-highlighter` (Prism) with the **Gruvbox** theme. It automatically switches between the dark and light variant based on the user's `prefers-color-scheme` media query.
+
+A header bar above the code shows a file icon, filename, and a copy-to-clipboard button. Copying fires a Rybbit analytics event (`copy_code`) with the block's `id`.
+
+```tsx
+import CodeBlock from '@/components/blogs/code-block';
+import { LuTerminal } from 'react-icons/lu';
+
+<CodeBlock
+  id='install-bark-js'
+  icon={<LuTerminal />}
+  fileName="terminal"
+  language="bash"
+>
+{`npm install @thiskyhan/bark.js`}
+</CodeBlock>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `string` | — | Unique identifier; passed to the copy analytics event |
+| `icon` | `React.ReactNode` | — | Icon shown in the header bar (any React Icons element) |
+| `fileName` | `string` | — | Filename label shown in the header bar |
+| `language` | `string` | — | Prism language identifier (e.g. `'bash'`, `'typescript'`, `'javascript'`) |
+| `dimmed` | `boolean` | `true` | When `false`, uses the `bg-quaternary` background instead of `bg-secondary` |
+
+## Blog post layout
+
+All posts share the layout defined in `app/blogs/layout.tsx`. The layout renders:
+
+- A back-link header with the `Avatar`, the post title (or `skyhan.cloud` while the title resolves), and a hidden `DiscordStatus` (to pre-populate the Zustand store).
+- The MDX content wrapped in Tailwind Typography (`prose`) classes with custom overrides for headings, code, blockquotes, and tables.
+- Click handlers on all headings (`h2`–`h6`) that push the heading's `id` to the URL hash and smooth-scroll to it.
+
+## Adding a new blog post
+
+<Steps>
+  <Step title="Create the directory">
+    Create a new folder under `app/blogs/` using a URL-friendly slug:
+
+    ```bash
+    mkdir app/blogs/my-new-post
+    ```
+  </Step>
+
+  <Step title="Create page.mdx">
+    Create `app/blogs/my-new-post/page.mdx` and export your metadata at the top:
+
+    ```tsx
+    import generateMetadata from '@/utils/generateMetadata';
+
+    export const metadata = generateMetadata({
+      title: 'My New Post',
+      description: 'A short description of what this post is about.',
+      date: '2025-06-01'
+    });
+
+    Your post content starts here...
+    ```
+  </Step>
+
+  <Step title="Add blog components (optional)">
+    Import `Image` and `CodeBlock` at the top of the file as needed:
+
+    ```tsx
+    import Image from '@/components/blogs/image';
+    import CodeBlock from '@/components/blogs/code-block';
+    import { LuTerminal } from 'react-icons/lu';
+    ```
+  </Step>
+
+  <Step title="Verify the post appears">
+    Run the dev server and visit the home page. Your post should appear in the **Blog Posts** section, sorted by date with the newest post first.
+
+    ```bash
+    npm run dev
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  The `Blogs` component filters out any entry in `app/blogs/` that is not a directory, so files like `layout.tsx` are automatically excluded from the listing.
+</Note>

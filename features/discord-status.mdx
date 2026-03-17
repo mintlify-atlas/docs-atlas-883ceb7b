@@ -1,0 +1,96 @@
+---
+title: Discord Status
+description: Real-time Discord online/offline status powered by the lantern.rest API, with Spotify now-playing and animated presence indicator.
+---
+
+The Discord Status feature displays Gökhan's live Discord presence in the top-right corner of the page header. It fetches data from the [lantern.rest](https://lantern.rest) API on mount, then renders an animated status indicator, an optional Spotify now-playing strip, and a "last seen" relative timestamp when offline.
+
+## How it works
+
+On component mount, `DiscordStatus` sends a single `GET` request to:
+
+```
+https://lantern.rest/api/v1/users/:userId
+```
+
+The response is typed as `LanternUserResponse`. Depending on the returned `status` field the component enters one of four internal states:
+
+| State | Trigger |
+|-------|---------|
+| `loading` | Initial state before the fetch completes |
+| `online` | `data.status` is any value other than `'offline'` |
+| `offline` | `data.status === 'offline'` |
+| `error` | Fetch throws or returns a non-OK response |
+
+The full response is also written into the Zustand `useDiscordUserStore` so that other components — notably `Avatar` — can read the user's display avatar URL without making a second network request.
+
+## Online state
+
+When `status === 'online'` the component renders a green filled dot with an `animate-ping` CSS animation layered on top, giving the pulsing "live" effect. If `data.active_platforms.spotify` is non-null a compact now-playing strip appears above the status dot (hidden on mobile via `sm:flex`):
+
+- A spinning album-cover thumbnail (`animate-spin`, 3 s duration)
+- "Listening to **{song}** by **{artist}**"
+
+Artists are joined with `', '` when the `artist` field is an array.
+
+## Offline / loading / error state
+
+All three non-online states are treated as `isOffline = true`:
+
+- The status dot is rendered in the muted `bg-quaternary` colour.
+- The label reads **Offline**.
+- When `lastSeenAt` is available (i.e. the user was offline and the API returned `last_seen_at`), a "Last seen (relative time)" line is shown above the dot using the `getRelativeTime` utility.
+
+## TypeScript types
+
+The feature depends on two types exported from `@/types`:
+
+```typescript
+type LanternSpotify = {
+  track_id: string;
+  song: string;
+  artist: string | string[];
+  album: string;
+  album_cover: string;
+  start_time: { unix: number; raw: string };
+  end_time:   { unix: number; raw: string };
+  time: {
+    current_human_readable: string;
+    total_human_readable: string;
+  };
+};
+
+type LanternUserResponse =
+  | (BaseUserType & { status: 'offline'; last_seen_at: { unix: number; raw: Date } })
+  | (BaseUserType & { status: string; last_seen_at: { unix: number; raw: Date } });
+```
+
+`last_seen_at.unix` is in seconds; the component multiplies by `1000` before passing it to `getRelativeTime`.
+
+## Analytics
+
+Clicking the status widget fires a Rybbit analytics event:
+
+```typescript
+window.rybbit.event('discord_status_click');
+```
+
+The call is guarded with `'rybbit' in window` so it silently skips in development or when the analytics script is absent.
+
+## Usage
+
+The component is rendered once in `app/page.tsx` and once in `app/blogs/layout.tsx` (hidden with `hide`):
+
+```tsx
+// app/page.tsx — visible in the header
+<DiscordStatus userId='957840712404193290' />
+
+// app/blogs/layout.tsx — hidden, still fetches to populate the Zustand store
+<DiscordStatus userId='957840712404193290' hide={true} />
+```
+
+<Note>
+  The `hide` prop prevents the element from rendering (`display: none`) but the component still mounts, fetches the lantern.rest API, and populates the Zustand store. This lets the `Avatar` component on blog pages resolve the user's avatar without a second request.
+</Note>
+
+See the [DiscordStatus component reference](/components/discord-status) for the full props table.

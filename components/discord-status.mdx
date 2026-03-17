@@ -1,0 +1,110 @@
+---
+title: DiscordStatus
+description: Client component that fetches live Discord presence from lantern.rest and renders an animated status indicator with optional Spotify now-playing.
+---
+
+`DiscordStatus` is a client component located at `components/discord-status.tsx`. It fetches presence data from the lantern.rest REST API on mount, exposes four internal states (`loading`, `online`, `offline`, `error`), and renders an animated status dot with optional Spotify and last-seen metadata.
+
+## Props
+
+<ParamField path="userId" type="string" required>
+  The Discord user ID to look up. Passed directly into the lantern.rest API URL:
+  `https://lantern.rest/api/v1/users/{userId}`
+</ParamField>
+
+<ParamField path="hide" type="boolean">
+  When `true`, applies `display: none` to the component via a conditional `hidden` class. The component still mounts and fetches data — this is used on blog pages to populate the Zustand store for `Avatar` without displaying the widget. Defaults to `false`.
+</ParamField>
+
+## Usage
+
+```tsx
+import DiscordStatus from '@/components/discord-status';
+
+// Visible status widget in the page header
+<DiscordStatus userId='957840712404193290' />
+
+// Hidden — fetches data to populate the Zustand store only
+<DiscordStatus userId='957840712404193290' hide={true} />
+```
+
+## State behaviour
+
+| State | Visual output |
+|-------|---------------|
+| `loading` | Grey dot, label "Offline", no last-seen strip |
+| `online` | Green pulsing dot, label "Online", optional Spotify strip |
+| `offline` | Grey dot, label "Offline", "Last seen (relative time)" strip when `last_seen_at` is available |
+| `error` | Grey dot, label "Offline", no last-seen strip |
+
+Loading, error, and offline states all resolve to `isOffline = true` and share the same visual treatment.
+
+## Spotify now-playing
+
+When the status is `online` and `data.active_platforms.spotify` is non-null, a now-playing row is rendered above the status dot (hidden on `sm:` breakpoints and below):
+
+- A 16 × 16 px album cover thumbnail that spins continuously (`animate-spin`, `animation-duration: 3s`).
+- "Listening to **\{song\}** by **\{artist\}**" — artists are joined with `', '` when `artist` is an array.
+
+## External API
+
+The component calls:
+
+```
+GET https://lantern.rest/api/v1/users/:userId
+```
+
+The response is typed as `LanternUserResponse`:
+
+```typescript
+type LanternUserResponse =
+  | (BaseUserType & { status: 'offline'; last_seen_at: { unix: number; raw: Date } })
+  | (BaseUserType & { status: string; last_seen_at: { unix: number; raw: Date } });
+```
+
+The Spotify data within the response uses the `LanternSpotify` type:
+
+```typescript
+export type LanternSpotify = {
+  track_id: string;
+  song: string;
+  artist: string | string[];
+  album: string;
+  album_cover: string;           // URL used as the spinning thumbnail src
+  start_time: { unix: number; raw: string };
+  end_time:   { unix: number; raw: string };
+  time: {
+    current_human_readable: string;
+    total_human_readable: string;
+  };
+};
+```
+
+## Zustand store integration
+
+After a successful fetch the full `LanternUserResponse` is written to the `useDiscordUserStore` via `setData`:
+
+```typescript
+// stores/discord-user.ts
+interface DiscordUserStore {
+  data: LanternUserResponse | null;
+  setData: (data: LanternUserResponse) => void;
+}
+
+export const useDiscordUserStore = create<DiscordUserStore>(set => ({
+  data: null,
+  setData: (data: LanternUserResponse) => set({ data })
+}));
+```
+
+This allows `Avatar` to read `data.metadata.display_avatar_url` without making a second network request.
+
+## Analytics
+
+Clicking the widget fires:
+
+```typescript
+window.rybbit.event('discord_status_click');
+```
+
+Guarded with `'rybbit' in window`.

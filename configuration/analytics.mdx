@@ -1,0 +1,146 @@
+---
+title: Analytics
+description: How Rybbit analytics is integrated into skyhan.cloud and how to configure or disable it.
+---
+
+## What is Rybbit?
+
+[Rybbit](https://www.rybbit.io) is a privacy-friendly, open-source web analytics platform. It does not use cookies and does not fingerprint visitors, making it a lightweight alternative to Google Analytics.
+
+## Getting your credentials
+
+To enable analytics you need two values from your Rybbit account:
+
+<Steps>
+  <Step title="Create an account">
+    Sign up at [rybbit.io](https://www.rybbit.io) and create a new site in the dashboard.
+  </Step>
+
+  <Step title="Copy the site ID">
+    After creating the site, Rybbit assigns it a numeric **site ID**. Copy this value — it becomes `RYBBIT_ANALYTICS_SITE_ID` in your `.env`.
+  </Step>
+
+  <Step title="Note the script URL">
+    Rybbit serves a tracking script from your instance's base URL, for example `https://app.rybbit.io`. This base URL becomes `RYBBIT_ANALYTICS_URL` in your `.env`.
+
+    The site constructs the full script path as `${RYBBIT_ANALYTICS_URL}/script.js`.
+  </Step>
+
+  <Step title="Update your .env">
+    Add both values to `.env`:
+
+    ```env
+    RYBBIT_ANALYTICS_SITE_ID=42
+    RYBBIT_ANALYTICS_URL=https://app.rybbit.io
+    ```
+  </Step>
+</Steps>
+
+## How the script is loaded
+
+The analytics script is injected in `app/layout.tsx` using Next.js's `<Script>` component. The script loads only when **all three** conditions are true:
+
+1. `NODE_ENV` is `"production"`
+2. `RYBBIT_ANALYTICS_SITE_ID` is non-empty
+3. `RYBBIT_ANALYTICS_URL` is non-empty
+
+```tsx
+{process.env.NODE_ENV === 'production' &&
+  process.env.RYBBIT_ANALYTICS_SITE_ID &&
+  process.env.RYBBIT_ANALYTICS_URL && (
+  <Script
+    id='rybbit-analytics-script'
+    src={`${process.env.RYBBIT_ANALYTICS_URL}/script.js`}
+    site-id={process.env.RYBBIT_ANALYTICS_SITE_ID}
+    defer={true}
+    strategy='afterInteractive'
+  />
+)}
+```
+
+The script uses the `afterInteractive` strategy, so it loads after the page becomes interactive and does not block rendering.
+
+## Development stub
+
+In development, the real Rybbit script is never loaded. Instead, the layout injects a tiny inline stub that satisfies any `window.rybbit` calls made by components:
+
+```tsx
+{process.env.NODE_ENV === 'development' && (
+  <Script
+    id='rybbit-analytics-script-development'
+    defer={true}
+    strategy='afterInteractive'
+    dangerouslySetInnerHTML={{
+      __html: `
+        window.rybbit = {
+          pageview: () => {},
+          event: () => {}
+        };
+      `
+    }}
+  />
+)}
+```
+
+This prevents `TypeError: window.rybbit is not defined` errors when running `pnpm dev`.
+
+## Custom events
+
+Several components fire named events via `window.rybbit.event(...)`. Because all components guard the call with `'rybbit' in window`, they are safe regardless of whether analytics is enabled.
+
+### `project_link_click`
+
+Fired in `components/projects.tsx` when a visitor clicks a project card.
+
+```typescript
+window.rybbit.event('project_link_click', {
+  project_name: item.name,
+  project_link: item.link
+});
+```
+
+| Property | Description |
+|---|---|
+| `project_name` | Display name of the project, e.g. `"SubWatch"`. |
+| `project_link` | Destination URL of the project. |
+
+### `work_link_click`
+
+Fired in `components/works.tsx` when a visitor clicks a work/experience entry.
+
+```typescript
+window.rybbit.event('work_link_click', {
+  work_name: item.name,
+  work_link: item.link
+});
+```
+
+| Property | Description |
+|---|---|
+| `work_name` | Display name of the work entry. |
+| `work_link` | Destination URL, or `undefined` for entries without a link. |
+
+### `discord_status_click`
+
+Fired in `components/discord-status.tsx` when a visitor clicks the Discord status indicator.
+
+```typescript
+window.rybbit.event('discord_status_click');
+```
+
+This event has no additional properties.
+
+## Disabling analytics
+
+Leave both `RYBBIT_ANALYTICS_SITE_ID` and `RYBBIT_ANALYTICS_URL` empty (or omit them entirely) in your `.env`:
+
+```env
+RYBBIT_ANALYTICS_SITE_ID=
+RYBBIT_ANALYTICS_URL=
+```
+
+When either variable is empty, the conditional in `app/layout.tsx` evaluates to `false` and no script tag is added to the page. No data is collected and no external requests are made.
+
+<Note>
+  Only Rybbit is supported. There is no built-in support for other analytics providers such as Google Analytics or Plausible.
+</Note>

@@ -1,0 +1,98 @@
+---
+title: Local Development
+description: Step-by-step guide to cloning skyhan.cloud and running it on your machine.
+---
+
+This guide walks you through getting the project running locally in development mode. Make sure you have completed the [Prerequisites](/self-hosting/prerequisites) before starting.
+
+## Setup
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone the project to your local machine using Git:
+
+    ```bash
+    git clone https://github.com/skyhancloud/skyhan.cloud.git
+    ```
+  </Step>
+
+  <Step title="Navigate into the directory">
+    ```bash
+    cd skyhan.cloud
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    Install all required packages with pnpm:
+
+    ```bash
+    pnpm install
+    ```
+
+    This also runs the `prepare` script which sets up [Husky](https://typicode.github.io/husky/) git hooks automatically.
+  </Step>
+
+  <Step title="Create your environment file">
+    Copy the example environment file and fill in your values:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    The `.env.example` file contains:
+
+    ```env
+    RYBBIT_ANALYTICS_SITE_ID=
+    RYBBIT_ANALYTICS_URL=
+    ```
+
+    Open `.env` in your editor and fill in the values if you want analytics enabled. Both fields can be left empty — the site runs normally without them.
+
+    <Note>
+      Analytics only load when `NODE_ENV` is set to `production`. During local development the analytics script is intentionally skipped, so you will not see analytics requests even if the env vars are set.
+    </Note>
+  </Step>
+
+  <Step title="Start the development server">
+    ```bash
+    pnpm dev
+    ```
+
+    This starts the Next.js dev server with **Turbopack** enabled for faster hot-module replacement. You will see output similar to:
+
+    ```
+     ▲ Next.js 15.x (Turbopack)
+     - Local: http://localhost:3000
+    ```
+  </Step>
+
+  <Step title="Open the site">
+    Navigate to [http://localhost:3000](http://localhost:3000) in your browser. The page reloads automatically whenever you save a file.
+  </Step>
+</Steps>
+
+## Available scripts
+
+All scripts are defined in `package.json` and run via pnpm:
+
+| Script | Command | Description |
+|--------|---------|-------------|
+| `dev` | `pnpm dev` | Starts the dev server with Turbopack |
+| `build` | `pnpm build` | Compiles the app for production |
+| `start` | `pnpm start` | Runs the compiled production build |
+| `lint` | `pnpm lint` | Runs ESLint across the project |
+
+## Turbopack
+
+The `dev` script passes the `--turbopack` flag to `next dev`. Turbopack is Next.js's Rust-based bundler that provides significantly faster cold starts and hot reloads compared to Webpack. No additional configuration is needed — it is enabled automatically.
+
+<Tip>
+  If you encounter a Turbopack-specific issue, you can temporarily disable it by editing the `dev` script in `package.json` to `next dev` (without the `--turbopack` flag) to verify whether the issue is bundler-related.
+</Tip>
+
+## Development workflow tips
+
+- **Content lives in MDX files.** Blog posts and other content pages use `.mdx` extensions and are processed by `@next/mdx`.
+- **Tailwind CSS** classes are used for all styling. The configuration lives in `tailwind.config.*`.
+- **TypeScript strict mode** is enabled. Make sure your editor has the TypeScript language server active so you catch type errors before committing.
+- **Lint before you commit.** The Husky pre-commit hook runs automatically, but you can also run `pnpm lint` manually at any time.

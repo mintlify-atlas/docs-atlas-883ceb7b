@@ -1,0 +1,153 @@
+---
+title: Production
+description: Build and deploy skyhan.cloud to a production environment.
+---
+
+This guide covers building the project for production and the available deployment options.
+
+## Build for production
+
+Run the Next.js production build:
+
+```bash
+pnpm build
+```
+
+This compiles and optimises the entire application into the `.next` directory. Once the build succeeds, start the production server:
+
+```bash
+pnpm start
+```
+
+The server listens on `http://localhost:3000` by default.
+
+<Warning>
+  Make sure your `.env` file (or your hosting platform's environment variable settings) contains the correct values **before** running `pnpm build`. The project uses Zod to validate environment variables at build time, and missing required values will cause the build to fail.
+</Warning>
+
+## Required environment variables
+
+For the full production experience — including analytics — set these variables in your deployment environment:
+
+```env
+RYBBIT_ANALYTICS_SITE_ID=your_site_id
+RYBBIT_ANALYTICS_URL=https://your-rybbit-instance/api/script.js
+```
+
+<Note>
+  The Rybbit analytics script only loads when `NODE_ENV=production`. On Vercel and most Node.js hosts, `NODE_ENV` is set to `production` automatically. If you are running `pnpm start` yourself, ensure the variable is set in your shell or process manager.
+</Note>
+
+Both variables can be left empty if you do not want analytics. The rest of the site functions normally without them.
+
+## Deployment options
+
+<Tabs>
+  <Tab title="Vercel (recommended)">
+    Vercel is the simplest way to deploy a Next.js application — zero-config, automatic HTTPS, and edge caching included.
+
+    <Steps>
+      <Step title="Import the repository">
+        Go to [vercel.com/new](https://vercel.com/new) and import your fork of `skyhancloud/skyhan.cloud` from GitHub.
+      </Step>
+
+      <Step title="Set environment variables">
+        In the Vercel project settings under **Environment Variables**, add:
+
+        - `RYBBIT_ANALYTICS_SITE_ID`
+        - `RYBBIT_ANALYTICS_URL`
+
+        Set them for the **Production** environment.
+      </Step>
+
+      <Step title="Deploy">
+        Click **Deploy**. Vercel runs `pnpm build` automatically and publishes the result. Every push to the `main` branch triggers a new deployment.
+      </Step>
+    </Steps>
+
+    <Tip>
+      Vercel sets `NODE_ENV=production` automatically, so analytics will load without any extra configuration on your part.
+    </Tip>
+  </Tab>
+
+  <Tab title="Self-hosted Node.js">
+    You can run the project on any Linux server with Node.js and pnpm installed.
+
+    <Steps>
+      <Step title="Clone and install on the server">
+        SSH into your server, then clone the repository and install dependencies:
+
+        ```bash
+        git clone https://github.com/skyhancloud/skyhan.cloud.git
+        cd skyhan.cloud
+        pnpm install
+        ```
+      </Step>
+
+      <Step title="Set environment variables">
+        Create a `.env` file (or export variables in your shell / process manager):
+
+        ```bash
+        cp .env.example .env
+        # edit .env with your values
+        ```
+      </Step>
+
+      <Step title="Build the application">
+        ```bash
+        NODE_ENV=production pnpm build
+        ```
+      </Step>
+
+      <Step title="Start the server">
+        ```bash
+        NODE_ENV=production pnpm start
+        ```
+
+        To keep the process running after you close your SSH session, use a process manager such as [PM2](https://pm2.keymetrics.io/):
+
+        ```bash
+        pm2 start "pnpm start" --name skyhan-cloud
+        pm2 save
+        ```
+      </Step>
+    </Steps>
+
+    <Note>
+      The GitHub Actions workflow for this project (`release-please.yml`) automates releases via [release-please](https://github.com/googleapis/release-please). If you want automated deployments over SSH, you can extend the workflow with an SSH deployment step — see the [v2.7.0 changelog entry](/contributing/changelog) for context on when this was originally added.
+    </Note>
+  </Tab>
+
+  <Tab title="Docker">
+    The repository does not include a `Dockerfile`. If you prefer a containerised deployment, you need to create one yourself.
+
+    A minimal starting point for a multi-stage Next.js Docker image:
+
+    ```dockerfile
+    FROM node:18-alpine AS deps
+    WORKDIR /app
+    COPY package.json pnpm-lock.yaml ./
+    RUN npm install -g pnpm && pnpm install --frozen-lockfile
+
+    FROM node:18-alpine AS builder
+    WORKDIR /app
+    COPY --from=deps /app/node_modules ./node_modules
+    COPY . .
+    RUN npm install -g pnpm && pnpm build
+
+    FROM node:18-alpine AS runner
+    WORKDIR /app
+    ENV NODE_ENV=production
+    COPY --from=builder /app/.next ./.next
+    COPY --from=builder /app/public ./public
+    COPY --from=builder /app/node_modules ./node_modules
+    COPY --from=builder /app/package.json ./package.json
+    EXPOSE 3000
+    CMD ["node_modules/.bin/next", "start"]
+    ```
+
+    <Warning>
+      This Dockerfile is a starting point only. Review it for your security and caching requirements before using it in a production environment. Pass `RYBBIT_ANALYTICS_SITE_ID` and `RYBBIT_ANALYTICS_URL` as Docker build arguments or runtime environment variables as appropriate.
+    </Warning>
+  </Tab>
+</Tabs>

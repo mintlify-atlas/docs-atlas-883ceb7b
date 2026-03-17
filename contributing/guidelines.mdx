@@ -1,0 +1,137 @@
+---
+title: Contributing Guidelines
+description: How to contribute code, report issues, and submit pull requests to skyhan.cloud.
+---
+
+Contributions are welcome! Whether you are fixing a bug, improving documentation, or proposing a new feature, this guide explains how to do it correctly.
+
+Please read the [Code of Conduct](https://github.com/skyhancloud/skyhan.cloud/blob/main/.github/CODE_OF_CONDUCT.md) before participating — all contributors are expected to follow it.
+
+## Contribution workflow
+
+<Steps>
+  <Step title="Fork and clone the repository">
+    Fork `skyhancloud/skyhan.cloud` on GitHub, then clone your fork locally:
+
+    ```bash
+    git clone https://github.com/<your-username>/skyhan.cloud.git
+    cd skyhan.cloud
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    ```bash
+    pnpm install
+    ```
+
+    This also sets up the Husky git hooks via the `prepare` script.
+  </Step>
+
+  <Step title="Create a new branch">
+    Create a dedicated branch for your change. Use a short, descriptive name that reflects the type of work:
+
+    ```bash
+    git checkout -b feat/add-dark-mode
+    # or
+    git checkout -b fix/discord-status-timestamp
+    ```
+
+    Prefix your branch name with the same type you plan to use in your commit message (`feat/`, `fix/`, `docs/`, `chore/`, etc.).
+  </Step>
+
+  <Step title="Make your changes">
+    Edit the code. A few things to keep in mind:
+
+    - Follow the existing TypeScript and Tailwind CSS conventions.
+    - Run `pnpm lint` after each significant change to catch ESLint errors early.
+    - Update documentation if your change affects behaviour that is documented.
+  </Step>
+
+  <Step title="Commit with a Conventional Commit message">
+    This project enforces [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) via `commitlint` and Husky. Your commit message must follow this format:
+
+    ```
+    <type>[optional scope]: <description>
+    ```
+
+    **Allowed types:**
+
+    | Type | When to use |
+    |------|-------------|
+    | `feat` | A new feature |
+    | `fix` | A bug fix |
+    | `docs` | Documentation changes only |
+    | `style` | Formatting, whitespace — no logic change |
+    | `refactor` | Code restructuring without feature or fix |
+    | `perf` | Performance improvement |
+    | `test` | Adding or updating tests |
+    | `chore` | Build process, dependency updates, tooling |
+    | `build` | Changes to the build system |
+    | `ci` | CI/CD configuration changes |
+
+    **Examples:**
+
+    ```bash
+    git commit -m "feat(blog): add table of contents component"
+    git commit -m "fix(discord-status): correct timestamp conversion to milliseconds"
+    git commit -m "chore: update next dependency to 15.0.7"
+    ```
+
+    <Warning>
+      The CI pipeline runs a [Conventional Commits check](https://github.com/webiny/action-conventional-commits) on every pull request targeting `main`. A commit message that does not match the format will cause the check to fail and your PR will not be merged until it is fixed.
+    </Warning>
+  </Step>
+
+  <Step title="Push and open a pull request">
+    Push your branch to your fork:
+
+    ```bash
+    git push origin feat/add-dark-mode
+    ```
+
+    Then open a pull request against the `main` branch of `skyhancloud/skyhan.cloud`. In your PR description:
+
+    - Summarise what the change does and why.
+    - Reference any related issues (e.g. `Closes #42`).
+    - Include screenshots for visual changes.
+  </Step>
+</Steps>
+
+## Code style
+
+**ESLint** is the primary linting tool. The configuration extends `eslint-config-next` and includes:
+
+- `@typescript-eslint` — TypeScript-specific rules with strict type checking
+- `eslint-plugin-react` — React best-practice rules
+- `eslint-plugin-security` — security-oriented lint rules
+- `eslint-plugin-tailwindcss` — enforces consistent Tailwind class ordering and usage
+
+Run the linter at any time:
+
+```bash
+pnpm lint
+```
+
+The ESLint workflow also runs automatically on every pull request targeting `main`.
+
+## Husky pre-commit hooks
+
+Husky is configured via the `prepare` script in `package.json`. When you run `pnpm install`, Husky sets up the git hooks directory automatically.
+
+The pre-commit hook runs `commitlint` against your commit message before the commit is finalised. If the message does not conform to Conventional Commits, the commit is rejected with an error message explaining the required format.
+
+<Tip>
+  If you ever need to bypass the hook in an emergency (not recommended), you can use `git commit --no-verify`. This skips commitlint but your PR will still fail the CI check if the message is non-conforming.
+</Tip>
+
+## Reporting issues
+
+If you find a bug or want to request a feature, [open an issue](https://github.com/skyhancloud/skyhan.cloud/issues) on GitHub. Include:
+
+- A clear description of the problem or request
+- Steps to reproduce (for bugs)
+- Error messages or screenshots where relevant
+
+## Licensing
+
+By submitting a pull request, you agree to license your contribution under the [GNU General Public License v3.0](https://github.com/skyhancloud/skyhan.cloud/blob/main/LICENSE). This is the same licence as the project itself.

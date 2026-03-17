@@ -1,0 +1,88 @@
+---
+title: Tooltip
+description: A Radix UI tooltip wrapper with mobile tap support, configurable placement, and pointer-events control.
+---
+
+`Tooltip` is a client component located at `components/tooltip.tsx`. It wraps [Radix UI Tooltip](https://www.radix-ui.com/primitives/docs/components/tooltip) and adds two behaviours not present in the primitive: mobile tap-to-toggle and a `disableHoverableContent` shortcut that adds `pointer-events-none` to the tooltip content.
+
+## Props
+
+<ParamField path="children" type="React.ReactNode" required>
+  The trigger element. Rendered with `asChild` — the child must be a single React element that forwards refs.
+</ParamField>
+
+<ParamField path="content" type="React.ReactNode">
+  The tooltip content. When omitted, the Radix `Content` and `Portal` are not rendered at all.
+</ParamField>
+
+<ParamField path="side" type="'top' | 'right' | 'bottom' | 'left'">
+  Which side of the trigger the tooltip appears on. Defaults to `'top'`.
+</ParamField>
+
+<ParamField path="sideOffset" type="number">
+  Distance in pixels between the trigger and the tooltip. Defaults to `5`.
+</ParamField>
+
+<ParamField path="hide" type="boolean">
+  When `true`, prevents the tooltip from opening on hover or tap. The trigger element is still rendered. Defaults to `false`.
+</ParamField>
+
+<ParamField path="delayDuration" type="number">
+  Milliseconds before the tooltip opens on hover. Defaults to `0`.
+</ParamField>
+
+<ParamField path="contentClassOverride" type="string">
+  Additional Tailwind classes appended to the content element, allowing callers to override the default `max-w-[320px] rounded-full` constraints. For example, `InlineQuote` passes `'sm:max-w-[500px] !rounded-md'`.
+</ParamField>
+
+<ParamField path="disableHoverableContent" type="boolean">
+  Controls whether the user can hover over the tooltip content itself. Defaults to `true`.
+
+  When `true`, `pointer-events-none` is applied to the content element, preventing mouse events from reaching it. This matches the Radix `disableHoverableContent` provider option.
+
+  When `false` (as used by `InlineQuote`), the tooltip content is interactive and the user can hover over it without it closing.
+</ParamField>
+
+## Usage
+
+```tsx
+import Tooltip from '@/components/tooltip';
+
+<Tooltip content='Discord status powered by lantern.rest' side='bottom'>
+  <button>Hover me</button>
+</Tooltip>
+```
+
+## Mobile behaviour
+
+On screens narrower than `640px` (detected via `react-use`'s `useMedia`), hover events do not open the tooltip. Instead, the trigger listens for a `click` event and toggles the open state manually. This gives touch users a tap-to-reveal interaction.
+
+```tsx
+<RadixTooltip.Trigger
+  onClick={() => {
+    if (hide) return;
+    if (isMobile) setOpen(!open);
+  }}
+  asChild
+>
+```
+
+## Styling
+
+The default content styles are:
+
+```
+z-10 max-w-[320px] rounded-lg bg-black p-2 text-center text-xs font-semibold text-white
+sm:max-w-[unset] sm:rounded-full sm:px-2 sm:py-1
+dark:bg-white dark:text-black
+```
+
+On larger screens (`sm:`) the tooltip collapses to a pill shape (`rounded-full`). In dark mode the colours invert to `bg-white text-black`. An `Arrow` element inherits the same fill colour.
+
+## Dependency
+
+`Tooltip` requires `@radix-ui/react-tooltip` and `react-use`. Both are listed as production dependencies in `package.json`.
+
+```bash
+npm install @radix-ui/react-tooltip react-use
+```

@@ -1,0 +1,65 @@
+---
+title: Works
+description: The Works section of the portfolio — professional and freelance work experience rendered as a linked list with hover effects and analytics tracking.
+---
+
+The `Works` component renders a vertically stacked list of professional and freelance engagements on the home page. Its structure and behaviour are identical to the `Projects` component — the only differences are the data and the analytics event name.
+
+## Data structure
+
+Works are defined as a plain array of objects inside `components/works.tsx`:
+
+```typescript
+{
+  name: string;         // Job title and company, used as the card heading
+  link?: string;        // Optional URL; cards without a link fall back to '#'
+  description: string;  // Short description of the work done
+}
+```
+
+## Current works
+
+| Name | Link | Description |
+|------|------|-------------|
+| **Frontend Developer at Kişilerarası İlişkiler Psikoterapisi Derneği** | `https://kisilerarasiiliskilerterapisi.com/` | Modernised the website with React & Tailwind CSS while preserving existing content. |
+| **Frontend and Backend Developer at barisyasaman.com** | `https://secim.barisyasaman.com` | Turkish election simulation site with live results on a map, React, SQLite, Tailwind CSS, and Express. |
+| **Discord Bots** | *(no link)* | Many Discord bots for various servers, built with Discord.js and MongoDB. |
+| **Bark.js** | `https://github.com/skyhancloud/bark.js` | A JavaScript library for sending custom notifications to iPhone via the Bark iOS app. |
+
+<Note>
+  The **Discord Bots** entry has no `link` value. The component falls back to `href='#'` for entries without a link, so the card is still rendered but clicking it does not navigate away.
+</Note>
+
+## Hover effect
+
+The same CSS-only hover highlight used in `Projects` is applied here — an oversized absolutely-positioned background `div` transitions from `opacity-0` to `opacity-100` on `group-hover` over 75 ms.
+
+## Analytics
+
+Each link click fires a Rybbit analytics event:
+
+```typescript
+window.rybbit.event('work_link_click', {
+  work_name: item.name,
+  work_link: item.link
+});
+```
+
+The call is guarded with `'rybbit' in window`.
+
+## Modifying works
+
+To add, remove, or reorder entries, edit the `data` array at the top of `components/works.tsx`:
+
+```tsx
+const data = [
+  {
+    name: 'Role at Company Name',
+    link: 'https://example.com',      // omit if there is no public URL
+    description: 'What you did and the technologies you used.'
+  },
+  // ...existing works
+];
+```
+
+The list renders in declaration order with no automatic sorting.

@@ -1,0 +1,64 @@
+---
+title: Environment variables
+description: All environment variables supported by skyhan.cloud, their types, and validation rules.
+---
+
+## Overview
+
+skyhan.cloud validates environment variables at startup using [Zod](https://zod.dev). If any variable fails validation, the server logs the error and throws, preventing the app from starting with a bad configuration.
+
+The validation schema is defined in `utils/validateEnvironmentVariables.ts` and is called during the Next.js build and server startup.
+
+## Variable reference
+
+| Variable | Required | Type | Description |
+|---|---|---|---|
+| `NODE_ENV` | Yes | `development` \| `production` | Set automatically by Next.js. Controls analytics loading and other runtime behaviour. |
+| `RYBBIT_ANALYTICS_SITE_ID` | No | `string` | Your Rybbit site ID. Leave empty to disable analytics. |
+| `RYBBIT_ANALYTICS_URL` | No | `string` (URL) | The base URL of your Rybbit instance, e.g. `https://app.rybbit.io`. Leave empty to disable analytics. |
+| `SPOTIFY_CLIENT_ID` | No | `string` | OAuth client ID for the Spotify integration. |
+| `SPOTIFY_CLIENT_SECRET` | No | `string` | OAuth client secret for the Spotify integration. |
+| `SPOTIFY_REDIRECT_URL` | No | `string` (URL) | Redirect URL registered with your Spotify app. |
+| `SPOTIFY_REFRESH_TOKEN` | No | `string` | Refresh token used to obtain new Spotify access tokens. |
+
+## `.env` file
+
+The repository ships an `.env.example` file that lists every variable with empty values. Copy it to `.env` before starting the server:
+
+```bash
+cp .env.example .env
+```
+
+The file looks like this out of the box:
+
+```env
+RYBBIT_ANALYTICS_SITE_ID=
+RYBBIT_ANALYTICS_URL=
+```
+
+Add any other variables you need below these two lines.
+
+## Zod validation
+
+Environment variables are validated with `zod.safeParse` at startup. The schema enforces the following rules:
+
+- `NODE_ENV` must be exactly `"development"` or `"production"`.
+- `RYBBIT_ANALYTICS_URL`, `SPOTIFY_REDIRECT_URL` must be valid URLs when provided.
+- All other variables are typed as `string` and are entirely optional — omitting them or leaving them blank is valid.
+
+If validation fails, the server prints a structured error object to stderr and throws:
+
+```
+Invalid environment variables:
+{ RYBBIT_ANALYTICS_URL: [ { message: 'Invalid url', ... } ] }
+```
+
+Fix the offending value in `.env` and restart the server.
+
+<Warning>
+  Do not commit your `.env` file to version control. It is listed in `.gitignore` by convention. Only commit `.env.example` with empty values.
+</Warning>
+
+## Analytics variables
+
+Both `RYBBIT_ANALYTICS_SITE_ID` and `RYBBIT_ANALYTICS_URL` must be set **and non-empty** for the analytics script to load. If either variable is absent, the script tag is omitted entirely from the HTML. See [Analytics](/configuration/analytics) for the full integration details.

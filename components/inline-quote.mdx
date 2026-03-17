@@ -1,0 +1,80 @@
+---
+title: InlineQuote
+description: Inline text component that renders either a dotted-underline tooltip or an external link depending on which prop is provided.
+---
+
+`InlineQuote` is a client component located at `components/inline-quote.tsx`. It wraps inline text and renders one of three behaviours depending on which props are provided:
+
+- **Neither `text` nor `href`** — renders `children` as-is with no decoration.
+- **`text` provided** — wraps `children` in a `Tooltip` that appears on hover (or tap on mobile).
+- **`href` provided** — wraps `children` in an `<a>` tag that opens in a new tab.
+
+Both interactive variants share the same visual style: a dotted underline using `decoration-tertiary` that transitions to `decoration-primary` on hover.
+
+## Props
+
+<ParamField path="children" type="React.ReactNode" required>
+  The inline content to display. Typically a short word or phrase.
+</ParamField>
+
+<ParamField path="text" type="string">
+  Tooltip content shown on hover. When provided, the element renders as a `cursor-help` `div` wrapping a `Tooltip` component. Mutually exclusive with `href` — if both are passed, `href` takes precedence because the `href` branch is checked first.
+</ParamField>
+
+<ParamField path="href" type="string">
+  URL to navigate to on click. Opens in a new tab (`target='_blank'`). When provided, the `text` tooltip is ignored.
+</ParamField>
+
+## Usage examples
+
+### Tooltip mode
+
+Provide `text` to show a tooltip on hover. The tooltip uses Radix UI and is capped at `sm:max-w-[500px]` with a `200 ms` open delay.
+
+```tsx
+import InlineQuote from '@/components/inline-quote';
+
+<InlineQuote text='TypeScript is a superset of JavaScript that adds static typing to the language.'>
+  TypeScript
+</InlineQuote>
+```
+
+### Link mode
+
+Provide `href` to turn the text into an external link.
+
+```tsx
+<InlineQuote href='https://github.com/skyhancloud'>GitHub</InlineQuote>
+<InlineQuote href='mailto:root@skyhan.cloud'>email</InlineQuote>
+<InlineQuote href='/resume.pdf'>resume</InlineQuote>
+```
+
+### Passthrough mode
+
+If neither prop is provided, `children` is returned directly with no wrapping element:
+
+```tsx
+<InlineQuote>plain text</InlineQuote>
+// renders: plain text
+```
+
+## Actual usage in `app/page.tsx`
+
+```tsx
+// Tooltip mode — explains the TypeScript term
+<InlineQuote text='TypeScript is a superset of JavaScript that adds static typing to the language. It\'s a powerful tool that helps you catch bugs and improve code quality.'>
+  TypeScript
+</InlineQuote>
+
+// Link mode — GitHub profile
+<InlineQuote href='https://github.com/skyhancloud'>GitHub</InlineQuote>
+
+// Link mode — email
+<InlineQuote href='mailto:root@skyhan.cloud'>email</InlineQuote>
+
+// Link mode — Instagram
+<InlineQuote href='https://instagram.com/skyhancloud'>Instagram</InlineQuote>
+
+// Link mode — resume PDF
+<InlineQuote href='/resume.pdf'>resume</InlineQuote>
+```
