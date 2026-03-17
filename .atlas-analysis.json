@@ -1,0 +1,100 @@
+{
+  "projectType": "frontend",
+  "projectName": "skyhan.cloud",
+  "projectDescription": "The source code for Gökhan Bulut's personal portfolio website, built with Next.js 15 and Tailwind CSS, featuring a blog, project showcase, work history, and live Discord status integration.",
+  "theme": "willow",
+  "primaryColor": "#a86848",
+  "lightColor": "#faf8f5",
+  "darkColor": "#262422",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Overview",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": ["introduction", "quickstart"]
+          },
+          {
+            "group": "Configuration",
+            "pages": ["configuration/environment-variables", "configuration/analytics"]
+          }
+        ]
+      },
+      {
+        "tab": "Features",
+        "groups": [
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/discord-status",
+              "features/blog",
+              "features/projects",
+              "features/works"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "components/avatar",
+              "components/discord-status",
+              "components/inline-quote",
+              "components/tooltip"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Self-Hosting",
+        "groups": [
+          {
+            "group": "Deployment",
+            "pages": [
+              "self-hosting/prerequisites",
+              "self-hosting/local-development",
+              "self-hosting/production"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Contributing",
+        "groups": [
+          {
+            "group": "Contributing",
+            "pages": [
+              "contributing/guidelines",
+              "contributing/changelog"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Personal portfolio homepage with bio, projects, and work history",
+    "MDX-powered blog with syntax highlighting",
+    "Live Discord online/offline status via lantern.rest API",
+    "Spotify now-playing display when listening",
+    "View transitions between pages",
+    "Rybbit analytics integration",
+    "Dark and light mode support with warm earthy color palette",
+    "Custom fonts: Geist Sans and Faustina",
+    "Environment variable validation with Zod",
+    "Conventional Commits and automated changelog generation"
+  ],
+  "publicApiSurface": [
+    "GET https://lantern.rest/api/v1/users/:userId — fetches Discord presence",
+    "generateMetadata(options?) — generates Next.js page metadata",
+    "DiscordStatus({ userId, hide? }) — Discord status component",
+    "Avatar — profile avatar component",
+    "InlineQuote({ text?, href?, children }) — inline tooltip/link component",
+    "Tooltip({ content, side?, children }) — Radix UI tooltip wrapper",
+    "Projects — static project list component",
+    "Works — static work history component",
+    "Blogs — async blog listing component",
+    "cn(...classes) — Tailwind class merging utility",
+    "getRelativeTime(timestamp) — human-readable relative time utility",
+    "validateEnvironmentVariables() — Zod-based env validation"
+  ]
+}
